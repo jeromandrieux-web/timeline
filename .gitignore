@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 .env
 .DS_Store
+# Données locales
+cases/**/*.db
+cases/**/uploads/
+cases/**/cache/
