@@ -1,763 +1,714 @@
 <!doctype html>
 <html lang="fr" data-bs-theme="light">
+
 <head>
   <meta charset="utf-8">
   <title>Timeline · V2</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="data:,">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    crossorigin="anonymous">
 
   <style>
-    :root{
+    :root {
       --bg: radial-gradient(1100px 600px at 20% -5%, #e5edf8 0%, #f4f7fb 50%, #f8fafc 90%);
-      --surface: rgba(255,255,255,0.9);
-      --border: rgba(15,23,42,0.10);
+      --surface: rgba(255, 255, 255, 0.9);
+      --border: rgba(15, 23, 42, 0.10);
       --muted: #64748b;
     }
+
     @media (prefers-color-scheme: dark) {
-      :root{
+      :root {
         --bg: radial-gradient(1100px 600px at 20% -5%, #14253b 0%, #0b1015 50%, #020617 90%);
-        --surface: rgba(5,8,12,0.55);
-        --border: rgba(255,255,255,0.08);
-        --muted: rgba(148,163,184,0.85);
+        --surface: rgba(5, 8, 12, 0.55);
+        --border: rgba(255, 255, 255, 0.08);
+        --muted: rgba(148, 163, 184, 0.85);
       }
     }
 
-    html, body { height: 100%; }
-    body{ background: var(--bg); }
-    .app-shell{ min-height: 100vh; padding: 18px 0; }
+    html,
+    body {
+      height: 100%;
+    }
 
-    .glass{
+    body {
+      background: var(--bg);
+    }
+
+    .app-shell {
+      min-height: 100vh;
+      padding: 18px 0;
+    }
+
+    .glass {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 1.25rem;
-      box-shadow: 0 18px 40px rgba(15,23,42,0.12);
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
       backdrop-filter: blur(18px);
     }
 
-    .dropzone{
-      border: 1px dashed rgba(148,163,184,0.8);
+    .dropzone {
+      border: 1px dashed rgba(148, 163, 184, 0.8);
       border-radius: 1rem;
       padding: 1rem;
       cursor: pointer;
-      background: rgba(248,250,252,0.9);
+      background: rgba(248, 250, 252, 0.9);
       user-select: none;
     }
-    [data-bs-theme="dark"] .dropzone { background: rgba(15,23,42,0.7); }
-    .dropzone.dragover{
-      border-style: solid;
-      border-color: #3b82f6;
-      background: rgba(59,130,246,0.10);
+
+    [data-bs-theme="dark"] .dropzone {
+      background: rgba(15, 23, 42, 0.7);
     }
 
-    .small-muted{ color: var(--muted); font-size: .9rem; }
+    .dropzone.dragover {
+      border-style: solid;
+      border-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.10);
+    }
 
-    .kbd{
+    .small-muted {
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .kbd {
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       font-size: .85em;
       padding: .1em .4em;
       border-radius: .4em;
       border: 1px solid var(--border);
-      background: rgba(148,163,184,0.12);
+      background: rgba(148, 163, 184, 0.12);
     }
 
-    .toast-wrap{ position: fixed; right: 18px; bottom: 18px; z-index: 99999; }
+    .toast-wrap {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 99999;
+    }
 
-    .doc-card{
+    .doc-card {
       border: 1px solid var(--border);
       border-radius: 0.9rem;
-      background: rgba(255,255,255,0.7);
+      background: rgba(255, 255, 255, 0.7);
       padding: .75rem;
     }
-    [data-bs-theme="dark"] .doc-card{ background: rgba(15,23,42,0.45); }
 
-    .timeline-wrap{
+    [data-bs-theme="dark"] .doc-card {
+      background: rgba(15, 23, 42, 0.45);
+    }
+
+    .timeline-wrap {
       max-height: calc(100vh - 330px);
       overflow: auto;
       border-radius: 0.9rem;
       border: 1px solid var(--border);
-      background: rgba(255,255,255,0.45);
+      background: rgba(255, 255, 255, 0.45);
     }
-    [data-bs-theme="dark"] .timeline-wrap{ background: rgba(15,23,42,0.35); }
 
-    .timeline-table thead th{
+    [data-bs-theme="dark"] .timeline-wrap {
+      background: rgba(15, 23, 42, 0.35);
+    }
+
+    .timeline-table thead th {
       position: sticky;
       top: 0;
       z-index: 2;
-      background: rgba(248,250,252,0.95);
+      background: rgba(248, 250, 252, 0.95);
       border-bottom: 1px solid var(--border);
     }
-    [data-bs-theme="dark"] .timeline-table thead th{ background: rgba(2,6,23,0.75); }
 
-    .clickable-row{ cursor:pointer; }
-    .timeline-table tbody tr:hover{
-      background: rgba(59,130,246,0.06);
+    [data-bs-theme="dark"] .timeline-table thead th {
+      background: rgba(2, 6, 23, 0.75);
+    }
+
+    .clickable-row {
+      cursor: pointer;
+    }
+
+    .timeline-table tbody tr:hover {
+      background: rgba(59, 130, 246, 0.06);
     }
 
     /* Markdown report styling */
-    .md-report{
+    .md-report {
       line-height: 1.55;
       font-size: 0.98rem;
     }
-    .md-report h1, .md-report h2, .md-report h3{
+
+    .md-report h1,
+    .md-report h2,
+    .md-report h3 {
       margin-top: 1.0rem;
       margin-bottom: .6rem;
       font-weight: 800;
     }
-    .md-report h2{ font-size: 1.15rem; }
-    .md-report h3{ font-size: 1.05rem; }
-    .md-report ul{ margin-bottom: .75rem; }
-    .md-report li{ margin: .18rem 0; }
-    .md-report blockquote{
-      border-left: 3px solid rgba(59,130,246,0.6);
+
+    .md-report h2 {
+      font-size: 1.15rem;
+    }
+
+    .md-report h3 {
+      font-size: 1.05rem;
+    }
+
+    .md-report ul {
+      margin-bottom: .75rem;
+    }
+
+    .md-report li {
+      margin: .18rem 0;
+    }
+
+    .md-report blockquote {
+      border-left: 3px solid rgba(59, 130, 246, 0.6);
       padding-left: .75rem;
       margin: .6rem 0;
-      color: rgba(100,116,139,1);
+      color: rgba(100, 116, 139, 1);
     }
-    .md-report code{
-      background: rgba(148,163,184,0.15);
+
+    .md-report code {
+      background: rgba(148, 163, 184, 0.15);
       border: 1px solid var(--border);
       padding: .05rem .35rem;
       border-radius: .35rem;
     }
-    .md-report pre{
-      background: rgba(2,6,23,0.85);
-      color: rgba(255,255,255,0.92);
+
+    .md-report pre {
+      background: rgba(2, 6, 23, 0.85);
+      color: rgba(255, 255, 255, 0.92);
       padding: .75rem;
       border-radius: .75rem;
       overflow: auto;
       border: 1px solid var(--border);
     }
 
-    .tab-btn.active{
-      background: rgba(59,130,246,0.12) !important;
-      border-color: rgba(59,130,246,0.35) !important;
+    .tab-btn.active {
+      background: rgba(59, 130, 246, 0.12) !important;
+      border-color: rgba(59, 130, 246, 0.35) !important;
       color: #0b5ed7 !important;
     }
 
     /* Focus ring plus clean */
-    .form-control:focus, .form-select:focus, textarea:focus, button:focus{
-      box-shadow: 0 0 0 .2rem rgba(59,130,246,0.18) !important;
+    .form-control:focus,
+    .form-select:focus,
+    textarea:focus,
+    button:focus {
+      box-shadow: 0 0 0 .2rem rgba(59, 130, 246, 0.18) !important;
     }
 
-    /* =====================================================
-       HELP MODE – LECTURE CONFORT (FULL FIX)
-       - S’applique si .help-mode est sur html, body OU un wrapper
-       - Neutralise bg-dark/text-light dans la zone aide
-       - Surfaces & tables lisibles + code fond clair
-       - Ne casse pas les layouts (pas de .help-mode div)
-       ===================================================== */
-
-    /* Fond & texte (wrapper/html/body) */
-    .help-mode,
-    html.help-mode,
-    body.help-mode{
-      background: #ffffff !important;
-      color: #0b1220 !important;
-    }
-
-    /* Sélection (quand tu sélectionnes, tu gardes du contraste) */
-    .help-mode ::selection{
-      background: rgba(29,78,216,0.22);
-    }
-
-    /* Limite largeur “lecture” */
-    .help-mode .container-fluid{ max-width: 980px; }
-
-    /* Surfaces principales */
-    .help-mode .glass,
-    .help-mode .card,
-    .help-mode .modal-content,
-    .help-mode .timeline-wrap,
-    .help-mode .doc-card{
-      background: #ffffff !important;
-      border: 1px solid rgba(15,23,42,0.10) !important;
-      box-shadow: none !important;
-      backdrop-filter: none !important;
-    }
-
-    /* Typo */
-    .help-mode h1,
-    .help-mode h2,
-    .help-mode h3,
-    .help-mode h4,
-    .help-mode h5{
-      color: #0b1220 !important;
-      line-height: 1.25;
-      letter-spacing: -0.01em;
-    }
-
-    .help-mode p,
-    .help-mode li{
-      color: #111827 !important;
-      line-height: 1.85;
-      font-size: 1.06rem;
-    }
-
-    .help-mode .small-muted{ color: #475569 !important; }
-
-    .help-mode a{
-      color: #1d4ed8 !important;
-      text-decoration: underline;
-      text-underline-offset: 2px;
-    }
-    .help-mode a:hover{ color: #1e40af !important; }
-
-    .help-mode hr{
-      border: 0;
-      border-top: 1px solid rgba(15,23,42,0.12);
-    }
-
-    /* Tables dans l’aide */
-    .help-mode .table{
-      color: #0b1220 !important;
-    }
-    .help-mode .timeline-table thead th{
-      background: #f8fafc !important;
-      color: #0b1220 !important;
-      border-bottom: 1px solid rgba(15,23,42,0.12) !important;
-    }
-    .help-mode .timeline-table tbody td{
-      border-color: rgba(15,23,42,0.10) !important;
-    }
-
-    /* Code inline */
-    .help-mode :not(pre) > code{
-      background: rgba(15,23,42,0.06) !important;
-      color: #0b1220 !important;
-      border: 1px solid rgba(15,23,42,0.10) !important;
-      padding: .12em .35em;
-      border-radius: .4rem;
-      font-size: 0.95em;
-    }
-
-    /* Code blocks */
-    .help-mode pre{
-      background: #f8fafc !important;
-      color: #0b1220 !important;
-      border: 1px solid rgba(15,23,42,0.12) !important;
-      padding: 1rem 1.1rem !important;
-      border-radius: .9rem !important;
-      overflow: auto;
-      line-height: 1.65;
-    }
-    .help-mode pre code{
-      background: transparent !important;
-      border: 0 !important;
-      padding: 0 !important;
-      color: inherit !important;
-    }
-
-    /* Neutralisation Bootstrap "dangereuse" DANS help-mode */
-    .help-mode .text-light,
-    .help-mode .text-white{
-      color: #0b1220 !important;
-    }
-    .help-mode .bg-dark,
-    .help-mode .bg-black{
-      background: #f8fafc !important;
-      color: #0b1220 !important;
-    }
-    .help-mode .text-muted{
-      color: #475569 !important;
-    }
-
-    /* Markdown rendu en aide */
-    .help-mode .md-report{
-      color: #111827 !important;
-      font-size: 1.02rem;
-      line-height: 1.85;
-    }
-    .help-mode .md-report blockquote{
-      color: #334155 !important;
-      border-left-color: rgba(29,78,216,0.35) !important;
-      background: rgba(29,78,216,0.04);
-      padding: .6rem .9rem;
-      border-radius: .6rem;
-    }
-    .help-mode .md-report pre{
-      background: #f8fafc !important;
-      color: #0b1220 !important;
-    }
-  
     /* Logo identique aux autres applis (coin haut gauche) */
-    .app-logo-corner{
+    .app-logo-corner {
       position: fixed;
       left: 12px;
       top: 12px;
       width: 38px;
       height: 38px;
       border-radius: 999px;
-      border: 1px solid var(--border, rgba(15,23,42,0.15));
-      box-shadow: 0 10px 24px rgba(15,23,42,0.18);
-      background: rgba(255,255,255,0.65);
+      border: 1px solid var(--border, rgba(15, 23, 42, 0.15));
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+      background: rgba(255, 255, 255, 0.65);
       backdrop-filter: blur(10px);
-      z-index: 1060; /* au-dessus de la page, sous la modale */
+      z-index: 1060;
+      /* au-dessus de la page, sous la modale */
       pointer-events: none;
     }
-    [data-bs-theme="dark"] .app-logo-corner{
-      background: rgba(2,6,23,0.55);
+
+    [data-bs-theme="dark"] .app-logo-corner {
+      background: rgba(2, 6, 23, 0.55);
     }
 
     /* Modale Aide : toujours lisible */
-    #helpModal .modal-content{
+    #helpModal .modal-content {
       background: #ffffff;
       color: #0b1220;
-      border: 1px solid rgba(15,23,42,0.12);
+      border: 1px solid rgba(15, 23, 42, 0.12);
       border-radius: 16px;
     }
-    #helpModal .modal-header{
-      border-bottom: 1px solid rgba(15,23,42,0.10);
+
+    #helpModal .modal-header {
+      border-bottom: 1px solid rgba(15, 23, 42, 0.10);
     }
-    #helpModal .modal-footer{
-      border-top: 1px solid rgba(15,23,42,0.10);
+
+    #helpModal .modal-footer {
+      border-top: 1px solid rgba(15, 23, 42, 0.10);
     }
-    #helpModal p, #helpModal li{
+
+    #helpModal p,
+    #helpModal li {
       color: #0b1220;
       line-height: 1.75;
     }
-    #helpModal code{
-      background: rgba(15,23,42,0.06);
-      border: 1px solid rgba(15,23,42,0.10);
+
+    #helpModal code {
+      background: rgba(15, 23, 42, 0.06);
+      border: 1px solid rgba(15, 23, 42, 0.10);
       padding: .12em .35em;
       border-radius: .4rem;
     }
-    #helpModal pre{
+
+    #helpModal pre {
       background: #f8fafc;
-      border: 1px solid rgba(15,23,42,0.10);
+      border: 1px solid rgba(15, 23, 42, 0.10);
       padding: .75rem;
       border-radius: .75rem;
       overflow: auto;
     }
-
   </style>
 </head>
 
 <body>
-<div class="app-shell">
-  <div class="container-fluid px-3 px-md-4">
-    <div class="glass p-3 p-md-4">
+  <div class="app-shell">
+    <div class="container-fluid px-3 px-md-4">
+      <div class="glass p-3 p-md-4">
 
-      <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
-        <div>
-          <h4 class="mb-1">Timeline · V2</h4>
-          <div class="small-muted">Enquête (base dédiée) → import → extraction LLM → timeline & rapports</div>
-        </div>
-        <div class="d-flex gap-2 align-items-center flex-wrap">
-          <span class="badge text-bg-secondary">Enquête active: <span id="activeCase">—</span></span>
-
-          <select id="caseSelect" class="form-select form-select-sm" style="max-width:220px">
-            <option value="">Choisir une enquête…</option>
-          </select>
-
-          <button id="btnUseCase" class="btn btn-outline-primary rounded-pill btn-sm">Utiliser</button>
-
-          <div class="input-group input-group-sm" style="max-width:260px">
-            <span class="input-group-text">Nouvelle</span>
-            <input id="newCaseId" class="form-control" placeholder="ex: flag_2026" />
-            <button id="btnCreateCase" class="btn btn-primary">Créer</button>
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+          <div>
+            <h4 class="mb-1">Timeline · V2</h4>
+            <div class="small-muted">Enquête (base dédiée) → import → extraction LLM → timeline & rapports</div>
           </div>
+          <div class="d-flex gap-2 align-items-center flex-wrap">
+            <span class="badge text-bg-secondary">Enquête active: <span id="activeCase">—</span></span>
 
-          <button id="btnRefresh" class="btn btn-outline-secondary rounded-pill btn-sm">Rafraîchir</button>
-
-          <button id="btnHelp" class="btn btn-outline-secondary rounded-pill btn-sm" type="button" target="_blank" rel="noopener" data-bs-toggle="modal" data-bs-target="#helpModal">Aide</button>
-        </div>
-      </div>
-
-      <div class="row g-3 align-items-stretch">
-        <!-- Col gauche -->
-        <div class="col-12 col-lg-4">
-          <div class="mb-2">
-            <label class="form-label fw-semibold small">Ajouter des documents</label>
-            <div id="dropzone" class="dropzone">
-              <div class="fw-semibold">Glisser-déposer ici</div>
-              <div class="small-muted">PDF, DOCX, TXT/MD</div>
-              <div class="small-muted mt-2">Astuce : clic sur la zone pour choisir un fichier.</div>
-              <input id="fileInput" type="file" class="d-none" multiple accept=".pdf,.docx,.txt,.md" />
-            </div>
-          </div>
-
-          <div class="d-flex justify-content-between align-items-center mt-3 mb-2">
-            <div class="fw-semibold">Documents</div>
-            <span id="docCount" class="badge text-bg-secondary">0</span>
-          </div>
-          <div id="docList" class="d-flex flex-column gap-2"></div>
-
-          <div class="small-muted mt-3">
-            Endpoints :
-            <span class="kbd">/api/upload</span>,
-            <span class="kbd">/api/timeline</span>,
-            <span class="kbd">/api/chat_timeline</span>,
-            <span class="kbd">/api/jobs/extract</span>,
-            <span class="kbd">/api/report_by_person</span>,
-            <span class="kbd">/api/report_by_type</span>
-          </div>
-        </div>
-
-        <!-- Col droite -->
-        <div class="col-12 col-lg-8 d-flex flex-column">
-
-          <!-- Tabs -->
-          <div class="d-flex flex-wrap gap-2 mb-2">
-            <button id="tabTimeline" class="btn btn-outline-secondary btn-sm rounded-pill tab-btn active">Timeline</button>
-            <button id="tabReports" class="btn btn-outline-secondary btn-sm rounded-pill tab-btn">Rapports</button>
-            <button id="tabLLM" class="btn btn-outline-secondary btn-sm rounded-pill tab-btn">Analyse LLM</button>
-          </div>
-
-          <!-- Filters -->
-          <div id="filtersBar" class="d-flex flex-wrap gap-2 align-items-center mb-2">
-            <input id="q" class="form-control form-control-sm" style="max-width: 340px;"
-                   placeholder="Recherche libre (résumé, acteurs, quote, type…)" />
-
-            <select id="eventType" class="form-select form-select-sm" style="max-width: 240px">
-              <option value="">Type (tous)</option>
+            <select id="caseSelect" class="form-select form-select-sm" style="max-width:220px">
+              <option value="">Choisir une enquête…</option>
             </select>
 
-            <input id="startAfter" class="form-control form-control-sm" style="max-width: 220px;"
-                   placeholder="Début après (ISO ex: 2026-01-01T00:00:00Z)" />
+            <button id="btnUseCase" class="btn btn-outline-primary rounded-pill btn-sm">Utiliser</button>
 
-            <input id="startBefore" class="form-control form-control-sm" style="max-width: 220px;"
-                   placeholder="Début avant (ISO ex: 2026-01-31T23:59:59Z)" />
-
-            <div class="btn-group btn-group-sm" role="group" aria-label="Vue">
-              <input type="radio" class="btn-check" name="viewMode" id="viewPages" autocomplete="off" checked>
-              <label class="btn btn-outline-secondary rounded-pill" for="viewPages">Par page</label>
-
-              <input type="radio" class="btn-check" name="viewMode" id="viewActs" autocomplete="off">
-              <label class="btn btn-outline-secondary rounded-pill" for="viewActs">Par acte</label>
+            <div class="input-group input-group-sm" style="max-width:260px">
+              <span class="input-group-text">Nouvelle</span>
+              <input id="newCaseId" class="form-control" placeholder="ex: flag_2026" />
+              <button id="btnCreateCase" class="btn btn-primary">Créer</button>
             </div>
 
-            <button id="btnExport" class="btn btn-outline-secondary btn-sm rounded-pill">Exporter CSV</button>
+            <button id="btnRefresh" class="btn btn-outline-secondary rounded-pill btn-sm">Rafraîchir</button>
 
-            <span class="badge text-bg-secondary">Affichés: <span id="evtCount">0</span></span>
-            <span class="badge text-bg-secondary">Offset: <span id="evtOffset">0</span></span>
-
-            <button id="btnMore" class="btn btn-outline-primary btn-sm rounded-pill">Charger +500</button>
+            <button id="btnHelp" class="btn btn-outline-secondary rounded-pill btn-sm" type="button"
+              data-bs-toggle="modal" data-bs-target="#helpModal">Aide</button>
           </div>
+        </div>
 
-          <!-- Timeline view -->
-          <div id="viewTimeline" class="flex-grow-1 d-flex flex-column">
-            <div class="timeline-wrap flex-grow-1" id="timelineWrap">
-              <table class="table table-sm align-middle mb-0 timeline-table">
-                <thead>
-                  <tr>
-                    <th style="white-space:nowrap;">Début</th>
-                    <th style="white-space:nowrap;">Type</th>
-                    <th>Résumé</th>
-                    <th style="white-space:nowrap;">Acteurs</th>
-                    <th style="white-space:nowrap;">Source</th>
-                  </tr>
-                </thead>
-                <tbody id="timelineBody">
-                  <tr><td colspan="5" class="small-muted">Aucun événement pour le moment.</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Reports view -->
-          <div id="viewReports" class="d-none flex-grow-1">
-            <div class="d-flex flex-wrap gap-2 mb-2">
-              <button id="btnReportPerson" class="btn btn-outline-primary btn-sm rounded-pill">Rapport par personne</button>
-              <button id="btnReportType" class="btn btn-outline-primary btn-sm rounded-pill">Rapport par type d’acte</button>
-            </div>
-
-            <div id="reportsLoading" class="small-muted d-none">Chargement…</div>
-            <div id="reportsHost" class="timeline-wrap p-3"></div>
-          </div>
-
-          <!-- LLM view -->
-          <div id="viewLLM" class="d-none flex-grow-1">
-            <div class="card shadow-sm">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
-                  <h5 class="card-title mb-0">Interroger l’assistant (sur la sélection)</h5>
-                  <div class="small-muted">Utilise les filtres au-dessus (recherche/type/date + vue page/acte), puis pose ta question.</div>
-                </div>
-
-                <textarea id="llmInput" class="form-control my-3" rows="4"
-                          placeholder="Ex: Fais une synthèse / Liste les contradictions / Chronologie factuelle / Acteurs et rôles…"></textarea>
-
-                <div class="d-flex flex-wrap gap-2">
-                  <button id="btnAskLLM" class="btn btn-primary">Interroger</button>
-                  <button id="btnLLMSummary" class="btn btn-outline-secondary">Résumé global</button>
-                  <button id="btnLLMContrad" class="btn btn-outline-secondary">Contradictions</button>
-                  <button id="btnLLMPerson" class="btn btn-outline-secondary">Extraction par personne</button>
-                  <button id="btnLLMActType" class="btn btn-outline-secondary">Extraction par type d’acte</button>
-                </div>
-
-                <hr>
-                <div id="llmAnswer" class="mt-3 md-report small"></div>
+        <div class="row g-3 align-items-stretch">
+          <!-- Col gauche -->
+          <div class="col-12 col-lg-4">
+            <div class="mb-2">
+              <label class="form-label fw-semibold small">Ajouter des documents</label>
+              <div id="dropzone" class="dropzone">
+                <div class="fw-semibold">Glisser-déposer ici</div>
+                <div class="small-muted">PDF, DOCX, TXT/MD</div>
+                <div class="small-muted mt-2">Astuce : clic sur la zone pour choisir un fichier.</div>
+                <input id="fileInput" type="file" class="d-none" multiple accept=".pdf,.docx,.txt,.md" />
               </div>
             </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-3 mb-2">
+              <div class="fw-semibold">Documents</div>
+              <span id="docCount" class="badge text-bg-secondary">0</span>
+            </div>
+            <div id="docList" class="d-flex flex-column gap-2"></div>
+
+            <div class="small-muted mt-3">
+              Endpoints :
+              <span class="kbd">/api/upload</span>,
+              <span class="kbd">/api/timeline</span>,
+              <span class="kbd">/api/chat_timeline</span>,
+              <span class="kbd">/api/jobs/extract</span>,
+              <span class="kbd">/api/report_by_person</span>,
+              <span class="kbd">/api/report_by_type</span>
+            </div>
           </div>
 
+          <!-- Col droite -->
+          <div class="col-12 col-lg-8 d-flex flex-column">
+
+            <!-- Tabs -->
+            <div class="d-flex flex-wrap gap-2 mb-2">
+              <button id="tabTimeline"
+                class="btn btn-outline-secondary btn-sm rounded-pill tab-btn active">Timeline</button>
+              <button id="tabReports" class="btn btn-outline-secondary btn-sm rounded-pill tab-btn">Rapports</button>
+              <button id="tabLLM" class="btn btn-outline-secondary btn-sm rounded-pill tab-btn">Analyse LLM</button>
+            </div>
+
+            <!-- Filters -->
+            <div id="filtersBar" class="d-flex flex-wrap gap-2 align-items-center mb-2">
+              <input id="q" class="form-control form-control-sm" style="max-width: 340px;"
+                placeholder="Recherche libre (résumé, acteurs, quote, type…)" />
+
+              <select id="eventType" class="form-select form-select-sm" style="max-width: 240px">
+                <option value="">Type (tous)</option>
+              </select>
+
+              <input id="startAfter" class="form-control form-control-sm" style="max-width: 220px;"
+                placeholder="Début après (ISO ex: 2026-01-01T00:00:00Z)" />
+
+              <input id="startBefore" class="form-control form-control-sm" style="max-width: 220px;"
+                placeholder="Début avant (ISO ex: 2026-01-31T23:59:59Z)" />
+
+              <div class="btn-group btn-group-sm" role="group" aria-label="Vue">
+                <input type="radio" class="btn-check" name="viewMode" id="viewPages" autocomplete="off" checked>
+                <label class="btn btn-outline-secondary rounded-pill" for="viewPages">Par page</label>
+
+                <input type="radio" class="btn-check" name="viewMode" id="viewActs" autocomplete="off">
+                <label class="btn btn-outline-secondary rounded-pill" for="viewActs">Par acte</label>
+              </div>
+
+              <button id="btnExport" class="btn btn-outline-secondary btn-sm rounded-pill">Exporter CSV</button>
+
+              <span class="badge text-bg-secondary">Affichés: <span id="evtCount">0</span></span>
+              <span class="badge text-bg-secondary">Offset: <span id="evtOffset">0</span></span>
+
+              <button id="btnMore" class="btn btn-outline-primary btn-sm rounded-pill">Charger +500</button>
+            </div>
+
+            <!-- Timeline view -->
+            <div id="viewTimeline" class="flex-grow-1 d-flex flex-column">
+              <div class="timeline-wrap flex-grow-1" id="timelineWrap">
+                <table class="table table-sm align-middle mb-0 timeline-table">
+                  <thead>
+                    <tr>
+                      <th style="white-space:nowrap;">Début</th>
+                      <th style="white-space:nowrap;">Type</th>
+                      <th>Résumé</th>
+                      <th style="white-space:nowrap;">Acteurs</th>
+                      <th style="white-space:nowrap;">Source</th>
+                    </tr>
+                  </thead>
+                  <tbody id="timelineBody">
+                    <tr>
+                      <td colspan="5" class="small-muted">Aucun événement pour le moment.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Reports view -->
+            <div id="viewReports" class="d-none flex-grow-1">
+              <div class="d-flex flex-wrap gap-2 mb-2">
+                <button id="btnReportPerson" class="btn btn-outline-primary btn-sm rounded-pill">Rapport par
+                  personne</button>
+                <button id="btnReportType" class="btn btn-outline-primary btn-sm rounded-pill">Rapport par type
+                  d’acte</button>
+              </div>
+
+              <div id="reportsLoading" class="small-muted d-none">Chargement…</div>
+              <div id="reportsHost" class="timeline-wrap p-3"></div>
+            </div>
+
+            <!-- LLM view -->
+            <div id="viewLLM" class="d-none flex-grow-1">
+              <div class="card shadow-sm">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+                    <h5 class="card-title mb-0">Interroger l’assistant (sur la sélection)</h5>
+                    <div class="small-muted">Utilise les filtres au-dessus (recherche/type/date + vue page/acte), puis
+                      pose ta question.</div>
+                  </div>
+
+                  <textarea id="llmInput" class="form-control my-3" rows="4"
+                    placeholder="Ex: Fais une synthèse / Liste les contradictions / Chronologie factuelle / Acteurs et rôles…"></textarea>
+
+                  <div class="d-flex flex-wrap gap-2">
+                    <button id="btnAskLLM" class="btn btn-primary">Interroger</button>
+                    <button id="btnLLMSummary" class="btn btn-outline-secondary">Résumé global</button>
+                    <button id="btnLLMContrad" class="btn btn-outline-secondary">Contradictions</button>
+                    <button id="btnLLMPerson" class="btn btn-outline-secondary">Extraction par personne</button>
+                    <button id="btnLLMActType" class="btn btn-outline-secondary">Extraction par type d’acte</button>
+                  </div>
+
+                  <hr>
+                  <div id="llmAnswer" class="mt-3 md-report small"></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast-wrap">
+    <div id="appToast" class="toast align-items-center text-bg-dark border-0" role="alert" aria-live="assertive"
+      aria-atomic="true">
+      <div class="d-flex">
+        <div id="toastMsg" class="toast-body">…</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+          aria-label="Fermer"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal détail événement -->
+  <div class="modal fade" id="eventModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Détail de l’événement</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="mb-2"><strong>Type :</strong> <span id="mType"></span></div>
+          <div class="mb-2"><strong>Début :</strong> <span id="mStart"></span></div>
+          <div class="mb-2"><strong>Acteurs :</strong> <span id="mActors"></span></div>
+          <div class="mb-2"><strong>Résumé :</strong></div>
+          <div class="border rounded p-2 mb-3" id="mSummary"></div>
+
+          <div class="mb-2"><strong>Source :</strong></div>
+          <pre class="bg-light p-2 rounded small" id="mSource"></pre>
+
+          <div class="mb-2"><strong>Payload brut :</strong></div>
+          <pre class="bg-dark text-light p-2 rounded small" id="mPayload"></pre>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
         </div>
       </div>
-
     </div>
   </div>
-</div>
 
-<!-- Toast -->
-<div class="toast-wrap">
-  <div id="appToast" class="toast align-items-center text-bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true">
-    <div class="d-flex">
-      <div id="toastMsg" class="toast-body">…</div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fermer"></button>
-    </div>
-  </div>
-</div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" crossorigin="anonymous"></script>
 
-<!-- Modal détail événement -->
-<div class="modal fade" id="eventModal" tabindex="-1">
-  <div class="modal-dialog modal-xl modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Détail de l’événement</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
+  <script>
+    const el = (id) => document.getElementById(id);
 
-      <div class="modal-body">
-        <div class="mb-2"><strong>Type :</strong> <span id="mType"></span></div>
-        <div class="mb-2"><strong>Début :</strong> <span id="mStart"></span></div>
-        <div class="mb-2"><strong>Acteurs :</strong> <span id="mActors"></span></div>
-        <div class="mb-2"><strong>Résumé :</strong></div>
-        <div class="border rounded p-2 mb-3" id="mSummary"></div>
+    // ----------------------------
+    // Mode GitHub Pages (DEMO)
+    // ----------------------------
+    const IS_GH_PAGES = location.hostname.endsWith("github.io");
+    // Sur Pages, "." fait référence à /timeline/ (racine du repo)
+    const API_BASE = IS_GH_PAGES ? "." : "";
 
-        <div class="mb-2"><strong>Source :</strong></div>
-        <pre class="bg-light p-2 rounded small" id="mSource"></pre>
+    const PAGE_SIZE = 500;
+    let CURRENT_EVENTS = [];
+    let CURRENT_OFFSET = 0;
 
-        <div class="mb-2"><strong>Payload brut :</strong></div>
-        <pre class="bg-dark text-light p-2 rounded small" id="mPayload"></pre>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" crossorigin="anonymous"></script>
-
-<script>
-  const el = (id) => document.getElementById(id);
-
-  const PAGE_SIZE = 500;
-  let CURRENT_EVENTS = [];
-  let CURRENT_OFFSET = 0;
-
-  function getViewMode() {
-    return el("viewActs").checked ? "acte" : "page";
-  }
-
-  function showToast(msg) {
-    const toastEl = el("appToast");
-    el("toastMsg").textContent = msg;
-    const t = bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 3200 });
-    t.show();
-  }
-
-  function escapeHtml(s) {
-    return (s ?? "").toString()
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;");
-  }
-
-  function fmtActors(e) {
-    const arr = Array.isArray(e.actors) ? e.actors : [];
-    const parts = arr
-      .filter(a => a && a.value)
-      .map(a => (a.role ? `${a.role}: ${a.value}` : `${a.value}`));
-    return parts.join(", ");
-  }
-
-  function fmtSource(e) {
-    const s = (Array.isArray(e.sources) && e.sources.length) ? e.sources[0] : null;
-    if (!s) return "";
-    const base = s.file_name || s.doc_id || "";
-    const p = (s.page !== null && s.page !== undefined) ? ` p.${s.page}` : "";
-    const q = s.quote ? ` — ${s.quote}` : "";
-    return `${base}${p}${q}`;
-  }
-
-  function currentFilters() {
-    return {
-      q: (el("q")?.value || "").trim() || null,
-      event_type: (el("eventType")?.value || "").trim() || null,
-      start_after: (el("startAfter")?.value || "").trim() || null,
-      start_before: (el("startBefore")?.value || "").trim() || null,
-      limit: PAGE_SIZE,
-      offset: CURRENT_OFFSET,
-      view: getViewMode()
-    };
-  }
-
-  function buildQueryParams() {
-    const params = new URLSearchParams();
-    const q = (el("q").value || "").trim();
-    const eventType = (el("eventType").value || "").trim();
-    const startAfter = (el("startAfter").value || "").trim();
-    const startBefore = (el("startBefore").value || "").trim();
-    if (q) params.set("q", q);
-    if (eventType) params.set("event_type", eventType);
-    if (startAfter) params.set("start_after", startAfter);
-    if (startBefore) params.set("start_before", startBefore);
-    params.set("limit", String(PAGE_SIZE));
-    params.set("offset", String(CURRENT_OFFSET));
-    params.set("view", getViewMode());
-    return params;
-  }
-
-  async function apiGet(url) {
-    const r = await fetch(url);
-    if (!r.ok) {
-      const txt = await r.text().catch(() => "");
-      throw new Error(`GET ${url} -> ${r.status} ${txt}`);
+    function getViewMode() {
+      return el("viewActs").checked ? "acte" : "page";
     }
-    return r.json();
-  }
 
-  async function apiPost(url, body, isForm=false) {
-    const opts = { method: "POST" };
-    if (isForm) {
-      opts.body = body;
-    } else {
-      opts.headers = { "Content-Type": "application/json" };
-      opts.body = JSON.stringify(body ?? {});
+    function showToast(msg) {
+      const toastEl = el("appToast");
+      el("toastMsg").textContent = msg;
+      const t = bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 3200 });
+      t.show();
     }
-    const r = await fetch(url, opts);
-    if (!r.ok) {
-      const txt = await r.text().catch(() => "");
-      throw new Error(`POST ${url} -> ${r.status} ${txt}`);
+
+    function escapeHtml(s) {
+      return (s ?? "").toString()
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
     }
-    return r.json();
-  }
 
-  // ----------------------------
-  // Cases
-  // ----------------------------
-  async function refreshCases() {
-    const r = await apiGet("/api/cases");
-    el("activeCase").textContent = r.active_case || "—";
-    const sel = el("caseSelect");
-    sel.innerHTML = `<option value="">Choisir une enquête…</option>`;
-    (r.cases || []).forEach(c => {
-      const opt = document.createElement("option");
-      opt.value = c;
-      opt.textContent = c;
-      if (c === r.active_case) opt.selected = true;
-      sel.appendChild(opt);
-    });
-  }
-
-  async function useSelectedCase() {
-    const cid = (el("caseSelect").value || "").trim();
-    if (!cid) { showToast("Choisis une enquête."); return; }
-    await apiPost(`/api/cases/use?case_id=${encodeURIComponent(cid)}`, {});
-    await hardRefreshTimeline();
-    await refreshAll();
-    showToast(`Enquête active: ${cid}`);
-  }
-
-  async function createCase() {
-    const cid = (el("newCaseId").value || "").trim();
-    if (!cid) { showToast("Nom d'enquête vide."); return; }
-    await apiPost(`/api/cases?case_id=${encodeURIComponent(cid)}`, {});
-    el("newCaseId").value = "";
-    await hardRefreshTimeline();
-    await refreshAll();
-    showToast(`Enquête créée: ${cid}`);
-  }
-
-  // ----------------------------
-  // Docs + Jobs
-  // ----------------------------
-  async function startExtractJob(doc_id) {
-    showToast("Extraction LLM : démarrage…");
-    const r = await apiPost(`/api/jobs/extract?doc_id=${encodeURIComponent(doc_id)}&chunk_pages=20&max_events_per_chunk=150&resume=1`, {});
-    if (r.job_id) {
-      await refreshDocs();
-      pollJob(r.job_id, 1200000);
-    } else {
-      showToast("Extraction déjà en cours.");
+    function fmtActors(e) {
+      const arr = Array.isArray(e.actors) ? e.actors : [];
+      const parts = arr
+        .filter(a => a && a.value)
+        .map(a => (a.role ? `${a.role}: ${a.value}` : `${a.value}`));
+      return parts.join(", ");
     }
-  }
 
-  async function pollJob(job_id, maxMs=600000) {
-    const t0 = Date.now();
-    while (true) {
-      if (Date.now() - t0 > maxMs) {
-        showToast("Extraction en cours (longue). Rafraîchis plus tard.");
+    function fmtSource(e) {
+      const s = (Array.isArray(e.sources) && e.sources.length) ? e.sources[0] : null;
+      if (!s) return "";
+      const base = s.file_name || s.doc_id || "";
+      const p = (s.page !== null && s.page !== undefined) ? ` p.${s.page}` : "";
+      const q = s.quote ? ` — ${s.quote}` : "";
+      return `${base}${p}${q}`;
+    }
+
+    function currentFilters() {
+      return {
+        q: (el("q")?.value || "").trim() || null,
+        event_type: (el("eventType")?.value || "").trim() || null,
+        start_after: (el("startAfter")?.value || "").trim() || null,
+        start_before: (el("startBefore")?.value || "").trim() || null,
+        limit: PAGE_SIZE,
+        offset: CURRENT_OFFSET,
+        view: getViewMode()
+      };
+    }
+
+    function buildQueryParams() {
+      const params = new URLSearchParams();
+      const q = (el("q").value || "").trim();
+      const eventType = (el("eventType").value || "").trim();
+      const startAfter = (el("startAfter").value || "").trim();
+      const startBefore = (el("startBefore").value || "").trim();
+      if (q) params.set("q", q);
+      if (eventType) params.set("event_type", eventType);
+      if (startAfter) params.set("start_after", startAfter);
+      if (startBefore) params.set("start_before", startBefore);
+      params.set("limit", String(PAGE_SIZE));
+      params.set("offset", String(CURRENT_OFFSET));
+      params.set("view", getViewMode());
+      return params;
+    }
+
+    async function apiGet(url) {
+      const full = (url.startsWith("/") ? `${API_BASE}${url}` : url);
+      const r = await fetch(full);
+      if (!r.ok) {
+        const txt = await r.text().catch(() => "");
+        throw new Error(`GET ${full} -> ${r.status} ${txt}`);
+      }
+      return r.json();
+    }
+
+    async function apiPost(url, body, isForm = false) {
+      const full = (url.startsWith("/") ? `${API_BASE}${url}` : url);
+
+      // En mode DEMO (GitHub Pages), on n'a pas de backend -> pas de POST
+      if (IS_GH_PAGES) {
+        showToast("Mode démo (GitHub Pages) : action indisponible sans backend.");
+        return { ok: false };
+      }
+
+      const opts = { method: "POST" };
+      if (isForm) {
+        opts.body = body;
+      } else {
+        opts.headers = { "Content-Type": "application/json" };
+        opts.body = JSON.stringify(body ?? {});
+      }
+      const r = await fetch(full, opts);
+      if (!r.ok) {
+        const txt = await r.text().catch(() => "");
+        throw new Error(`POST ${full} -> ${r.status} ${txt}`);
+      }
+      return r.json();
+    }
+
+    // ----------------------------
+    // Cases
+    // ----------------------------
+    async function refreshCases() {
+      const r = await apiGet(IS_GH_PAGES ? "/api/cases.json" : "/api/cases");
+      el("activeCase").textContent = r.active_case || "—";
+      const sel = el("caseSelect");
+      sel.innerHTML = `<option value="">Choisir une enquête…</option>`;
+      (r.cases || []).forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c;
+        opt.textContent = c;
+        if (c === r.active_case) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    }
+
+    async function useSelectedCase() {
+      const cid = (el("caseSelect").value || "").trim();
+      if (!cid) { showToast("Choisis une enquête."); return; }
+      await apiPost(`/api/cases/use?case_id=${encodeURIComponent(cid)}`, {});
+      await hardRefreshTimeline();
+      await refreshAll();
+      showToast(`Enquête active: ${cid}`);
+    }
+
+    async function createCase() {
+      const cid = (el("newCaseId").value || "").trim();
+      if (!cid) { showToast("Nom d'enquête vide."); return; }
+      await apiPost(`/api/cases?case_id=${encodeURIComponent(cid)}`, {});
+      el("newCaseId").value = "";
+      await hardRefreshTimeline();
+      await refreshAll();
+      showToast(`Enquête créée: ${cid}`);
+    }
+
+    // ----------------------------
+    // Docs + Jobs
+    // ----------------------------
+    async function startExtractJob(doc_id) {
+      showToast("Extraction LLM : démarrage…");
+      const r = await apiPost(`/api/jobs/extract?doc_id=${encodeURIComponent(doc_id)}&chunk_pages=20&max_events_per_chunk=150&resume=1`, {});
+      if (r.job_id) {
+        await refreshDocs();
+        pollJob(r.job_id, 1200000);
+      } else {
+        showToast("Extraction déjà en cours.");
+      }
+    }
+
+    async function pollJob(job_id, maxMs = 600000) {
+      const t0 = Date.now();
+      while (true) {
+        if (Date.now() - t0 > maxMs) {
+          showToast("Extraction en cours (longue). Rafraîchis plus tard.");
+          return;
+        }
+        try {
+          const j = await apiGet(`/api/jobs/${encodeURIComponent(job_id)}`);
+          await refreshDocs();
+          await hardRefreshTimeline(false);
+
+          if (j.status === "done") {
+            showToast(j.message || "Extraction terminée.");
+            return;
+          }
+          if (j.status === "error") {
+            showToast("Erreur extraction (voir console).");
+            console.error(j);
+            return;
+          }
+          if (j.status === "canceled") {
+            showToast("Extraction annulée.");
+            return;
+          }
+          await new Promise(res => setTimeout(res, 1500));
+        } catch (e) {
+          console.error(e);
+          await new Promise(res => setTimeout(res, 2000));
+        }
+      }
+    }
+
+    function renderDocs(docs) {
+      el("docCount").textContent = (docs || []).length.toString();
+      const host = el("docList");
+      host.innerHTML = "";
+
+      if (!docs || docs.length === 0) {
+        host.innerHTML = `<div class="small-muted">Aucun document importé.</div>`;
         return;
       }
-      try {
-        const j = await apiGet(`/api/jobs/${encodeURIComponent(job_id)}`);
-        await refreshDocs();
-        await hardRefreshTimeline(false);
 
-        if (j.status === "done") {
-          showToast(j.message || "Extraction terminée.");
-          return;
-        }
-        if (j.status === "error") {
-          showToast("Erreur extraction (voir console).");
-          console.error(j);
-          return;
-        }
-        if (j.status === "canceled") {
-          showToast("Extraction annulée.");
-          return;
-        }
-        await new Promise(res => setTimeout(res, 1500));
-      } catch (e) {
-        console.error(e);
-        await new Promise(res => setTimeout(res, 2000));
-      }
-    }
-  }
+      for (const d of docs) {
+        const wrap = document.createElement("div");
+        wrap.className = "doc-card";
 
-  function renderDocs(docs) {
-    el("docCount").textContent = (docs || []).length.toString();
-    const host = el("docList");
-    host.innerHTML = "";
+        const docType = (d.doc_type || "").toUpperCase();
+        const isPdf = (docType === "PDF");
 
-    if (!docs || docs.length === 0) {
-      host.innerHTML = `<div class="small-muted">Aucun document importé.</div>`;
-      return;
-    }
+        const meta = [
+          docType || "—",
+          `${d.size_bytes || 0} bytes`,
+          d.page_count ? `${d.page_count} pages` : null
+        ].filter(Boolean).join(" · ");
 
-    for (const d of docs) {
-      const wrap = document.createElement("div");
-      wrap.className = "doc-card";
+        const status = (d.llm_status || "idle").toLowerCase();
+        const pagesDone = Number(d.llm_pages_done || 0);
+        const pageCount = Number(d.page_count || 0);
+        const evCount = Number(d.llm_events_count || 0);
+        const statusLabel = (() => {
+          if (!isPdf) return "LLM: PDF uniquement";
+          if (status === "idle") return `LLM: prêt`;
+          if (status === "queued") return `LLM: en file…`;
+          if (status === "running") return `LLM: en cours (${pagesDone}/${pageCount})`;
+          if (status === "done") return `LLM: terminé (+${evCount} événements)`;
+          if (status === "error") return `LLM: erreur (reprendre possible)`;
+          return `LLM: ${status}`;
+        })();
 
-      const docType = (d.doc_type || "").toUpperCase();
-      const isPdf = (docType === "PDF");
-
-      const meta = [
-        docType || "—",
-        `${d.size_bytes || 0} bytes`,
-        d.page_count ? `${d.page_count} pages` : null
-      ].filter(Boolean).join(" · ");
-
-      const status = (d.llm_status || "idle").toLowerCase();
-      const pagesDone = Number(d.llm_pages_done || 0);
-      const pageCount = Number(d.page_count || 0);
-      const evCount = Number(d.llm_events_count || 0);
-      const statusLabel = (() => {
-        if (!isPdf) return "LLM: PDF uniquement";
-        if (status === "idle") return `LLM: prêt`;
-        if (status === "queued") return `LLM: en file…`;
-        if (status === "running") return `LLM: en cours (${pagesDone}/${pageCount})`;
-        if (status === "done") return `LLM: terminé (+${evCount} événements)`;
-        if (status === "error") return `LLM: erreur (reprendre possible)`;
-        return `LLM: ${status}`;
-      })();
-
-      const progressHtml = (isPdf && (status === "running" || status === "queued")) ? `
+        const progressHtml = (isPdf && (status === "running" || status === "queued")) ? `
         <div class="mt-2">
           <div class="d-flex align-items-center gap-2 small-muted">
             <div class="spinner-border spinner-border-sm" role="status"></div>
@@ -765,14 +716,14 @@
           </div>
           <div class="progress mt-2" style="height:8px;">
             <div class="progress-bar" role="progressbar"
-                 style="width:${pageCount ? Math.min(100, Math.round((pagesDone/pageCount)*100)) : 0}%"></div>
+                 style="width:${pageCount ? Math.min(100, Math.round((pagesDone / pageCount) * 100)) : 0}%"></div>
           </div>
         </div>
       ` : `<div class="small-muted mt-1">${escapeHtml(statusLabel)}</div>`;
 
-      const errHtml = (status === "error" && d.llm_error) ? `<div class="text-danger small mt-1">${escapeHtml(d.llm_error)}</div>` : "";
+        const errHtml = (status === "error" && d.llm_error) ? `<div class="text-danger small mt-1">${escapeHtml(d.llm_error)}</div>` : "";
 
-      wrap.innerHTML = `
+        wrap.innerHTML = `
         <div class="d-flex justify-content-between align-items-start gap-2">
           <div style="min-width:0">
             <div class="fw-semibold text-truncate">${escapeHtml(d.file_name || d.doc_id)}</div>
@@ -790,202 +741,213 @@
         </div>
       `;
 
-      wrap.querySelector(".btn-del").addEventListener("click", async () => {
-        try {
-          await apiPost(`/api/delete_doc?doc_id=${encodeURIComponent(d.doc_id)}`, {});
-          showToast("Document supprimé.");
-          await refreshAll();
-        } catch (e) {
-          console.error(e);
-          showToast("Erreur suppression (voir console).");
-        }
-      });
-
-      const btnExtract = wrap.querySelector(".btn-extract");
-      if (btnExtract && isPdf) {
-        btnExtract.addEventListener("click", async () => {
-          btnExtract.disabled = true;
+        wrap.querySelector(".btn-del").addEventListener("click", async () => {
           try {
-            await startExtractJob(d.doc_id);
-          } finally {
-            btnExtract.disabled = false;
+            await apiPost(`/api/delete_doc?doc_id=${encodeURIComponent(d.doc_id)}`, {});
+            showToast("Document supprimé.");
+            await refreshAll();
+          } catch (e) {
+            console.error(e);
+            showToast("Erreur suppression (voir console).");
           }
         });
+
+        const btnExtract = wrap.querySelector(".btn-extract");
+        if (btnExtract && isPdf) {
+          btnExtract.addEventListener("click", async () => {
+            btnExtract.disabled = true;
+            try {
+              await startExtractJob(d.doc_id);
+            } finally {
+              btnExtract.disabled = false;
+            }
+          });
+        }
+
+        host.appendChild(wrap);
+      }
+    }
+
+    // ----------------------------
+    // Timeline
+    // ----------------------------
+    function renderTimeline(events) {
+      el("evtCount").textContent = (events || []).length.toString();
+      el("evtOffset").textContent = String(CURRENT_OFFSET);
+
+      const body = el("timelineBody");
+      body.innerHTML = "";
+
+      if (!events || events.length === 0) {
+        body.innerHTML = `<tr><td colspan="5" class="small-muted">Aucun événement pour le moment.</td></tr>`;
+        return;
       }
 
-      host.appendChild(wrap);
-    }
-  }
-
-  // ----------------------------
-  // Timeline
-  // ----------------------------
-  function renderTimeline(events) {
-    el("evtCount").textContent = (events || []).length.toString();
-    el("evtOffset").textContent = String(CURRENT_OFFSET);
-
-    const body = el("timelineBody");
-    body.innerHTML = "";
-
-    if (!events || events.length === 0) {
-      body.innerHTML = `<tr><td colspan="5" class="small-muted">Aucun événement pour le moment.</td></tr>`;
-      return;
-    }
-
-    for (const e of events) {
-      const tr = document.createElement("tr");
-      tr.className = "clickable-row";
-      tr.innerHTML = `
+      for (const e of events) {
+        const tr = document.createElement("tr");
+        tr.className = "clickable-row";
+        tr.innerHTML = `
         <td style="white-space:nowrap;">${escapeHtml(e.start_time || "")}</td>
         <td style="white-space:nowrap;">${escapeHtml(e.type || "")}</td>
         <td>${escapeHtml(e.summary || "")}</td>
         <td style="white-space:nowrap;">${escapeHtml(fmtActors(e))}</td>
         <td style="white-space:nowrap;">${escapeHtml(fmtSource(e))}</td>
       `;
-      tr.addEventListener("click", () => openEventModal(e));
-      body.appendChild(tr);
-    }
-  }
-
-  function openEventModal(e) {
-    el("mType").textContent = e.type || "";
-    el("mStart").textContent = e.start_time || "";
-    el("mActors").textContent = fmtActors(e) || "";
-    el("mSummary").textContent = e.summary || "";
-
-    if (Array.isArray(e.sources) && e.sources.length > 0) {
-      el("mSource").textContent = JSON.stringify(e.sources[0], null, 2);
-    } else {
-      el("mSource").textContent = "";
-    }
-    el("mPayload").textContent = JSON.stringify(e.payload || {}, null, 2);
-
-    const modal = new bootstrap.Modal(el("eventModal"));
-    modal.show();
-  }
-
-  async function refreshDocs() {
-    const docs = await apiGet("/api/docs");
-    renderDocs(docs);
-  }
-
-  async function refreshTypes() {
-    const r = await apiGet("/api/event_types");
-    const sel = el("eventType");
-    const cur = sel.value || "";
-    sel.innerHTML = `<option value="">Type (tous)</option>`;
-    (r.types || []).forEach(x => {
-      const opt = document.createElement("option");
-      opt.value = x.type;
-      opt.textContent = `${x.type} (${x.count})`;
-      if (x.type === cur) opt.selected = true;
-      sel.appendChild(opt);
-    });
-  }
-
-  async function refreshTimeline(append=false) {
-    const params = buildQueryParams();
-    const events = await apiGet(`/api/timeline?${params.toString()}`);
-    if (append) {
-      CURRENT_EVENTS = [...CURRENT_EVENTS, ...(events || [])];
-    } else {
-      CURRENT_EVENTS = events || [];
-    }
-    renderTimeline(CURRENT_EVENTS);
-  }
-
-  async function hardRefreshTimeline(resetOffset=true) {
-    if (resetOffset) CURRENT_OFFSET = 0;
-    await refreshTimeline(false);
-  }
-
-  async function loadMore() {
-    CURRENT_OFFSET += PAGE_SIZE;
-    await refreshTimeline(true);
-  }
-
-  async function refreshAll() {
-    await refreshCases();
-    await Promise.all([refreshDocs(), refreshTypes(), hardRefreshTimeline(false)]);
-  }
-
-  // ----------------------------
-  // Upload
-  // ----------------------------
-  async function uploadFiles(fileList) {
-    const files = Array.from(fileList || []);
-    if (files.length === 0) return;
-
-    for (const f of files) {
-      const fd = new FormData();
-      fd.append("file", f);
-      try {
-        showToast(`Upload: ${f.name}…`);
-        await apiPost("/api/upload", fd, true);
-        showToast(`Import OK: ${f.name}`);
-      } catch (e) {
-        console.error(e);
-        showToast(`Erreur upload: ${f.name} (voir console)`);
-        break;
+        tr.addEventListener("click", () => openEventModal(e));
+        body.appendChild(tr);
       }
     }
-    await refreshAll();
-  }
 
-  function exportCsv() {
-    const params = new URLSearchParams();
-    const q = (el("q").value || "").trim();
-    const eventType = (el("eventType").value || "").trim();
-    const startAfter = (el("startAfter").value || "").trim();
-    const startBefore = (el("startBefore").value || "").trim();
-    if (q) params.set("q", q);
-    if (eventType) params.set("event_type", eventType);
-    if (startAfter) params.set("start_after", startAfter);
-    if (startBefore) params.set("start_before", startBefore);
-    params.set("limit", "20000");
-    const url = `/api/export.csv?${params.toString()}`;
-    window.open(url, "_blank");
-  }
+    function openEventModal(e) {
+      el("mType").textContent = e.type || "";
+      el("mStart").textContent = e.start_time || "";
+      el("mActors").textContent = fmtActors(e) || "";
+      el("mSummary").textContent = e.summary || "";
 
-  // ----------------------------
-  // LLM
-  // ----------------------------
-  function setQuickPrompt(text) {
-    el("llmInput").value = text;
-    el("llmInput").focus();
-  }
+      if (Array.isArray(e.sources) && e.sources.length > 0) {
+        el("mSource").textContent = JSON.stringify(e.sources[0], null, 2);
+      } else {
+        el("mSource").textContent = "";
+      }
+      el("mPayload").textContent = JSON.stringify(e.payload || {}, null, 2);
 
-  async function askLLM(questionOverride=null) {
-    const question = (questionOverride ?? (el("llmInput").value || "")).trim();
-    if (!question) { showToast("Question vide."); return; }
-
-    el("llmAnswer").innerHTML = `<div class="small-muted">Analyse en cours…</div>`;
-
-    try {
-      const body = { question, ...currentFilters() };
-      const r = await apiPost("/api/chat_timeline", body);
-      const md = r.answer || "(pas de réponse)";
-      el("llmAnswer").innerHTML = marked.parse(md);
-      showToast(`Assistant: ${r.events_used || 0} éléments.`);
-    } catch (e) {
-      console.error(e);
-      el("llmAnswer").innerHTML = `<div class="text-danger">Erreur assistant (voir console).</div>`;
-      showToast("Erreur assistant (voir console).");
-    }
-  }
-
-  // ----------------------------
-  // Reports
-  // ----------------------------
-  function renderReportByPerson(data) {
-    const people = data.people || [];
-    if (!people.length) {
-      return `<div class="small-muted">Aucun résultat.</div>`;
+      const modal = new bootstrap.Modal(el("eventModal"));
+      modal.show();
     }
 
-    const rows = people.slice(0, 200).map(p => {
-      const types = (p.types || []).slice(0, 6).map(x => `${escapeHtml(x.type)}:${x.count}`).join(" · ");
-      const examples = (p.examples || []).map(ex => `
+    async function refreshDocs() {
+      const docs = await apiGet(IS_GH_PAGES ? "/api/docs.json" : "/api/docs");
+      renderDocs(docs);
+    }
+
+    async function refreshTypes() {
+      const r = await apiGet(IS_GH_PAGES ? "/api/event_types.json" : "/api/event_types");
+      const sel = el("eventType");
+      const cur = sel.value || "";
+      sel.innerHTML = `<option value="">Type (tous)</option>`;
+      (r.types || []).forEach(x => {
+        const opt = document.createElement("option");
+        opt.value = x.type;
+        opt.textContent = `${x.type} (${x.count})`;
+        if (x.type === cur) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    }
+
+    async function refreshTimeline(append = false) {
+      const params = buildQueryParams();
+      const events = await apiGet(
+        IS_GH_PAGES ? "/api/timeline.json" : `/api/timeline?${params.toString()}`
+      );
+
+      if (append) {
+        CURRENT_EVENTS = [...CURRENT_EVENTS, ...(events || [])];
+      } else {
+        CURRENT_EVENTS = events || [];
+      }
+      renderTimeline(CURRENT_EVENTS);
+    }
+
+    async function hardRefreshTimeline(resetOffset = true) {
+      if (resetOffset) CURRENT_OFFSET = 0;
+      await refreshTimeline(false);
+    }
+
+    async function loadMore() {
+      CURRENT_OFFSET += PAGE_SIZE;
+      await refreshTimeline(true);
+    }
+
+    async function refreshAll() {
+      await refreshCases();
+      await Promise.all([refreshDocs(), refreshTypes(), hardRefreshTimeline(false)]);
+    }
+
+    // ----------------------------
+    // Upload
+    // ----------------------------
+    async function uploadFiles(fileList) {
+      const files = Array.from(fileList || []);
+      if (files.length === 0) return;
+
+      for (const f of files) {
+        const fd = new FormData();
+        fd.append("file", f);
+        try {
+          showToast(`Upload: ${f.name}…`);
+          await apiPost("/api/upload", fd, true);
+          showToast(`Import OK: ${f.name}`);
+        } catch (e) {
+          console.error(e);
+          showToast(`Erreur upload: ${f.name} (voir console)`);
+          break;
+        }
+      }
+      await refreshAll();
+    }
+
+    function exportCsv() {
+      const params = new URLSearchParams();
+      const q = (el("q").value || "").trim();
+      const eventType = (el("eventType").value || "").trim();
+      const startAfter = (el("startAfter").value || "").trim();
+      const startBefore = (el("startBefore").value || "").trim();
+      if (q) params.set("q", q);
+      if (eventType) params.set("event_type", eventType);
+      if (startAfter) params.set("start_after", startAfter);
+      if (startBefore) params.set("start_before", startBefore);
+      params.set("limit", "20000");
+
+      const url = IS_GH_PAGES ? "#"
+        : `/api/export.csv?${params.toString()}`;
+
+      if (IS_GH_PAGES) {
+        showToast("Mode démo : export CSV indisponible sans backend.");
+        return;
+      }
+
+      window.open(url, "_blank");
+    }
+
+    // ----------------------------
+    // LLM
+    // ----------------------------
+    function setQuickPrompt(text) {
+      el("llmInput").value = text;
+      el("llmInput").focus();
+    }
+
+    async function askLLM(questionOverride = null) {
+      const question = (questionOverride ?? (el("llmInput").value || "")).trim();
+      if (!question) { showToast("Question vide."); return; }
+
+      el("llmAnswer").innerHTML = `<div class="small-muted">Analyse en cours…</div>`;
+
+      try {
+        const body = { question, ...currentFilters() };
+        const r = await apiPost("/api/chat_timeline", body);
+        const md = r.answer || "(pas de réponse)";
+        el("llmAnswer").innerHTML = marked.parse(md);
+        showToast(`Assistant: ${r.events_used || 0} éléments.`);
+      } catch (e) {
+        console.error(e);
+        el("llmAnswer").innerHTML = `<div class="text-danger">Erreur assistant (voir console).</div>`;
+        showToast("Erreur assistant (voir console).");
+      }
+    }
+
+    // ----------------------------
+    // Reports
+    // ----------------------------
+    function renderReportByPerson(data) {
+      const people = data.people || [];
+      if (!people.length) {
+        return `<div class="small-muted">Aucun résultat.</div>`;
+      }
+
+      const rows = people.slice(0, 200).map(p => {
+        const types = (p.types || []).slice(0, 6).map(x => `${escapeHtml(x.type)}:${x.count}`).join(" · ");
+        const examples = (p.examples || []).map(ex => `
         <div class="small mt-2 border rounded p-2">
           <div><span class="kbd">${escapeHtml(ex.start_time || "—")}</span> <span class="kbd">${escapeHtml(ex.type || "—")}</span></div>
           <div class="mt-1">${escapeHtml(ex.summary || "")}</div>
@@ -994,7 +956,7 @@
         </div>
       `).join("");
 
-      return `
+        return `
         <div class="border rounded p-3 mb-2">
           <div class="d-flex justify-content-between flex-wrap gap-2">
             <div class="fw-semibold">${escapeHtml(p.person)}</div>
@@ -1004,18 +966,18 @@
           ${examples}
         </div>
       `;
-    }).join("");
+      }).join("");
 
-    return rows;
-  }
+      return rows;
+    }
 
-  function renderReportByType(data) {
-    const types = data.types || [];
-    if (!types.length) return `<div class="small-muted">Aucun résultat.</div>`;
+    function renderReportByType(data) {
+      const types = data.types || [];
+      if (!types.length) return `<div class="small-muted">Aucun résultat.</div>`;
 
-    const rows = types.slice(0, 200).map(t => {
-      const topActors = (t.top_actors || []).slice(0, 8).map(x => `${escapeHtml(x.actor)}:${x.count}`).join(" · ");
-      const examples = (t.examples || []).map(ex => `
+      const rows = types.slice(0, 200).map(t => {
+        const topActors = (t.top_actors || []).slice(0, 8).map(x => `${escapeHtml(x.actor)}:${x.count}`).join(" · ");
+        const examples = (t.examples || []).map(ex => `
         <div class="small mt-2 border rounded p-2">
           <div><span class="kbd">${escapeHtml(ex.start_time || "—")}</span></div>
           <div class="mt-1">${escapeHtml(ex.summary || "")}</div>
@@ -1024,7 +986,7 @@
         </div>
       `).join("");
 
-      return `
+        return `
         <div class="border rounded p-3 mb-2">
           <div class="d-flex justify-content-between flex-wrap gap-2">
             <div class="fw-semibold">${escapeHtml(t.type)}</div>
@@ -1034,149 +996,155 @@
           ${examples}
         </div>
       `;
-    }).join("");
+      }).join("");
 
-    return rows;
-  }
-
-  async function loadReport(kind) {
-    el("reportsLoading").classList.remove("d-none");
-    el("reportsHost").innerHTML = "";
-
-    try {
-      const f = currentFilters();
-      const params = new URLSearchParams();
-      if (f.q) params.set("q", f.q);
-      if (f.event_type && kind === "person") params.set("event_type", f.event_type);
-      if (f.start_after) params.set("start_after", f.start_after);
-      if (f.start_before) params.set("start_before", f.start_before);
-      params.set("limit", "20000");
-      params.set("max_examples", "5");
-
-      const url = (kind === "person")
-        ? `/api/report_by_person?${params.toString()}`
-        : `/api/report_by_type?${params.toString()}`;
-
-      const data = await apiGet(url);
-      el("reportsHost").innerHTML = (kind === "person") ? renderReportByPerson(data) : renderReportByType(data);
-
-    } catch (e) {
-      console.error(e);
-      el("reportsHost").innerHTML = `<div class="alert alert-danger">Erreur chargement rapport (voir console).</div>`;
-    } finally {
-      el("reportsLoading").classList.add("d-none");
+      return rows;
     }
-  }
 
-  // ----------------------------
-  // Tabs
-  // ----------------------------
-  function setTab(name) {
-    ["tabTimeline","tabReports","tabLLM"].forEach(id => el(id).classList.remove("active"));
-    el("tab" + name).classList.add("active");
+    async function loadReport(kind) {
+      el("reportsLoading").classList.remove("d-none");
+      el("reportsHost").innerHTML = "";
 
-    el("viewTimeline").classList.toggle("d-none", name !== "Timeline");
-    el("viewReports").classList.toggle("d-none", name !== "Reports");
-    el("viewLLM").classList.toggle("d-none", name !== "LLM");
-  }
+      try {
+        if (IS_GH_PAGES) {
+          showToast("Mode démo : rapports indisponibles sans backend.");
+          el("reportsHost").innerHTML = `<div class="alert alert-warning mb-0">Mode démo (GitHub Pages) : rapports indisponibles sans backend.</div>`;
+          return;
+        }
 
-  // ----------------------------
-  // Wire
-  // ----------------------------
-  function wire() {
-    el("btnRefresh").addEventListener("click", refreshAll);
-    el("btnUseCase").addEventListener("click", useSelectedCase);
-    el("btnCreateCase").addEventListener("click", createCase);
+        const f = currentFilters();
+        const params = new URLSearchParams();
+        if (f.q) params.set("q", f.q);
+        if (f.event_type && kind === "person") params.set("event_type", f.event_type);
+        if (f.start_after) params.set("start_after", f.start_after);
+        if (f.start_before) params.set("start_before", f.start_before);
+        params.set("limit", "20000");
+        params.set("max_examples", "5");
 
-    el("btnExport").addEventListener("click", exportCsv);
-    el("btnMore").addEventListener("click", async () => {
-      try { await loadMore(); } catch(e){ console.error(e); showToast("Erreur chargement (voir console)."); }
-    });
+        const url = (kind === "person")
+          ? `/api/report_by_person?${params.toString()}`
+          : `/api/report_by_type?${params.toString()}`;
 
-    el("tabTimeline").addEventListener("click", () => setTab("Timeline"));
-    el("tabReports").addEventListener("click", () => setTab("Reports"));
-    el("tabLLM").addEventListener("click", () => setTab("LLM"));
+        const data = await apiGet(url);
+        el("reportsHost").innerHTML = (kind === "person") ? renderReportByPerson(data) : renderReportByType(data);
 
-    el("btnReportPerson").addEventListener("click", () => loadReport("person"));
-    el("btnReportType").addEventListener("click", () => loadReport("type"));
+      } catch (e) {
+        console.error(e);
+        el("reportsHost").innerHTML = `<div class="alert alert-danger">Erreur chargement rapport (voir console).</div>`;
+      } finally {
+        el("reportsLoading").classList.add("d-none");
+      }
+    }
 
-    el("btnAskLLM").addEventListener("click", () => askLLM());
+    // ----------------------------
+    // Tabs
+    // ----------------------------
+    function setTab(name) {
+      ["tabTimeline", "tabReports", "tabLLM"].forEach(id => el(id).classList.remove("active"));
+      el("tab" + name).classList.add("active");
 
-    el("btnLLMSummary").addEventListener("click", () => {
-      const txt = "Fais un résumé global structuré des événements visibles (chronologie, points clés, acteurs, éléments probants).";
-      setQuickPrompt(txt); askLLM(txt);
-    });
-    el("btnLLMContrad").addEventListener("click", () => {
-      const txt = "Liste les contradictions, incohérences, trous temporels et zones d'ombre dans les événements visibles. Cite SRC/QUOTE.";
-      setQuickPrompt(txt); askLLM(txt);
-    });
-    el("btnLLMPerson").addEventListener("click", () => {
-      const txt = "Fais une extraction par personne: pour chaque personne, résume son rôle, les faits associés, les dates clés, et cite SRC/QUOTE.";
-      setQuickPrompt(txt); askLLM(txt);
-    });
-    el("btnLLMActType").addEventListener("click", () => {
-      const txt = "Fais une extraction par type d’acte (AUDITION, GAV, PERQUISITION, etc.): regroupe, compte, et cite SRC/QUOTE.";
-      setQuickPrompt(txt); askLLM(txt);
-    });
+      el("viewTimeline").classList.toggle("d-none", name !== "Timeline");
+      el("viewReports").classList.toggle("d-none", name !== "Reports");
+      el("viewLLM").classList.toggle("d-none", name !== "LLM");
+    }
 
-    // Debounced refresh on filters
-    let t = null;
-    const debounce = () => {
-      clearTimeout(t);
-      t = setTimeout(() => {
-        CURRENT_OFFSET = 0;
-        refreshTimeline(false).catch(console.error);
-      }, 250);
-    };
+    // ----------------------------
+    // Wire
+    // ----------------------------
+    function wire() {
+      el("btnRefresh").addEventListener("click", refreshAll);
+      el("btnUseCase").addEventListener("click", useSelectedCase);
+      el("btnCreateCase").addEventListener("click", createCase);
 
-    ["q","eventType","startAfter","startBefore"].forEach(id => {
-      el(id).addEventListener("input", debounce);
-      el(id).addEventListener("change", debounce);
-    });
-
-    ["viewPages","viewActs"].forEach(id => {
-      el(id).addEventListener("change", () => {
-        CURRENT_OFFSET = 0;
-        refreshTimeline(false).catch(console.error);
+      el("btnExport").addEventListener("click", exportCsv);
+      el("btnMore").addEventListener("click", async () => {
+        try { await loadMore(); } catch (e) { console.error(e); showToast("Erreur chargement (voir console)."); }
       });
-    });
 
-    const dz = el("dropzone");
-    const fi = el("fileInput");
+      el("tabTimeline").addEventListener("click", () => setTab("Timeline"));
+      el("tabReports").addEventListener("click", () => setTab("Reports"));
+      el("tabLLM").addEventListener("click", () => setTab("LLM"));
 
-    dz.addEventListener("click", () => fi.click());
-    dz.addEventListener("dragover", (ev) => { ev.preventDefault(); dz.classList.add("dragover"); });
-    dz.addEventListener("dragleave", () => dz.classList.remove("dragover"));
-    dz.addEventListener("drop", async (ev) => {
-      ev.preventDefault();
-      dz.classList.remove("dragover");
-      await uploadFiles(ev.dataTransfer.files);
-      fi.value = "";
-    });
+      el("btnReportPerson").addEventListener("click", () => loadReport("person"));
+      el("btnReportType").addEventListener("click", () => loadReport("type"));
 
-    fi.addEventListener("change", async () => {
-      await uploadFiles(fi.files);
-      fi.value = "";
-    });
+      el("btnAskLLM").addEventListener("click", () => askLLM());
 
-    // infinite scroll
-    const wrap = el("timelineWrap");
-    wrap.addEventListener("scroll", async () => {
-      const nearBottom = (wrap.scrollTop + wrap.clientHeight) >= (wrap.scrollHeight - 60);
-      if (!nearBottom) return;
-      if (wrap.dataset.loading === "1") return;
-      wrap.dataset.loading = "1";
-      try { await loadMore(); } catch(e) { console.error(e); }
-      finally { setTimeout(() => wrap.dataset.loading = "0", 600); }
-    });
-  }
+      el("btnLLMSummary").addEventListener("click", () => {
+        const txt = "Fais un résumé global structuré des événements visibles (chronologie, points clés, acteurs, éléments probants).";
+        setQuickPrompt(txt); askLLM(txt);
+      });
+      el("btnLLMContrad").addEventListener("click", () => {
+        const txt = "Liste les contradictions, incohérences, trous temporels et zones d'ombre dans les événements visibles. Cite SRC/QUOTE.";
+        setQuickPrompt(txt); askLLM(txt);
+      });
+      el("btnLLMPerson").addEventListener("click", () => {
+        const txt = "Fais une extraction par personne: pour chaque personne, résume son rôle, les faits associés, les dates clés, et cite SRC/QUOTE.";
+        setQuickPrompt(txt); askLLM(txt);
+      });
+      el("btnLLMActType").addEventListener("click", () => {
+        const txt = "Fais une extraction par type d’acte (AUDITION, GAV, PERQUISITION, etc.): regroupe, compte, et cite SRC/QUOTE.";
+        setQuickPrompt(txt); askLLM(txt);
+      });
 
-  (async function init() {
-    wire();
-    try { await refreshAll(); }
-    catch (e) { console.error(e); showToast("Erreur init (voir console)."); }
-  })();
-</script>
+      // Debounced refresh on filters
+      let t = null;
+      const debounce = () => {
+        clearTimeout(t);
+        t = setTimeout(() => {
+          CURRENT_OFFSET = 0;
+          refreshTimeline(false).catch(console.error);
+        }, 250);
+      };
+
+      ["q", "eventType", "startAfter", "startBefore"].forEach(id => {
+        el(id).addEventListener("input", debounce);
+        el(id).addEventListener("change", debounce);
+      });
+
+      ["viewPages", "viewActs"].forEach(id => {
+        el(id).addEventListener("change", () => {
+          CURRENT_OFFSET = 0;
+          refreshTimeline(false).catch(console.error);
+        });
+      });
+
+      const dz = el("dropzone");
+      const fi = el("fileInput");
+
+      dz.addEventListener("click", () => fi.click());
+      dz.addEventListener("dragover", (ev) => { ev.preventDefault(); dz.classList.add("dragover"); });
+      dz.addEventListener("dragleave", () => dz.classList.remove("dragover"));
+      dz.addEventListener("drop", async (ev) => {
+        ev.preventDefault();
+        dz.classList.remove("dragover");
+        await uploadFiles(ev.dataTransfer.files);
+        fi.value = "";
+      });
+
+      fi.addEventListener("change", async () => {
+        await uploadFiles(fi.files);
+        fi.value = "";
+      });
+
+      // infinite scroll
+      const wrap = el("timelineWrap");
+      wrap.addEventListener("scroll", async () => {
+        const nearBottom = (wrap.scrollTop + wrap.clientHeight) >= (wrap.scrollHeight - 60);
+        if (!nearBottom) return;
+        if (wrap.dataset.loading === "1") return;
+        wrap.dataset.loading = "1";
+        try { await loadMore(); } catch (e) { console.error(e); }
+        finally { setTimeout(() => wrap.dataset.loading = "0", 600); }
+      });
+    }
+
+    (async function init() {
+      wire();
+      try { await refreshAll(); }
+      catch (e) { console.error(e); showToast("Erreur init (voir console)."); }
+    })();
+  </script>
 
   <!-- Logo (coin haut gauche) -->
   <img src="static/logo_avatar.png" class="app-logo-corner" alt="Logo">
@@ -1190,11 +1158,13 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
         </div>
         <div class="modal-body">
-          <p class="mb-3">Cette application sert à <strong>centraliser des documents</strong>, <strong>produire une timeline</strong> et <strong>générer des rapports</strong> (avec ou sans analyse LLM) sur un dossier.</p>
+          <p class="mb-3">Cette application sert à <strong>centraliser des documents</strong>, <strong>produire une
+              timeline</strong> et <strong>générer des rapports</strong> (avec ou sans analyse LLM) sur un dossier.</p>
 
           <h6 class="mt-3">1) Créer / sélectionner un dossier</h6>
           <ul>
-            <li>Dans <em>Utiliser</em> : saisis un identifiant (ex: <code>flag_2026</code>) puis clique <strong>Créer</strong>.</li>
+            <li>Dans <em>Utiliser</em> : saisis un identifiant (ex: <code>flag_2026</code>) puis clique
+              <strong>Créer</strong>.</li>
             <li><strong>Rafraîchir</strong> recharge la liste et l’état du dossier.</li>
           </ul>
 
@@ -1214,7 +1184,8 @@
 
           <h6 class="mt-3">4) Onglet Rapports</h6>
           <ul>
-            <li><strong>Rapport par personne</strong> : synthèse centrée sur un individu (mentions, dates, contexte).</li>
+            <li><strong>Rapport par personne</strong> : synthèse centrée sur un individu (mentions, dates, contexte).
+            </li>
             <li><strong>Rapport par type d’acte</strong> : synthèse par catégories (PV, auditions, etc.).</li>
           </ul>
 
@@ -1227,7 +1198,10 @@
           </ul>
 
           <hr class="my-3">
-          <p class="mb-0 small text-muted">Astuce GitHub Pages : évite les chemins absolus (ex: <code>/static/...</code>). Préfère <code>static/...</code> ou <code>./static/...</code> pour que ça marche sur <em>https://user.github.io/nom-repo/</em>.</p>
+          <p class="mb-0 small text-muted">
+            Mode démo GitHub Pages : les fonctions serveur (création, upload, extraction, LLM, rapports) nécessitent un
+            backend.
+          </p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
@@ -1237,4 +1211,5 @@
   </div>
 
 </body>
+
 </html>
