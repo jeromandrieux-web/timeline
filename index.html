@@ -279,6 +279,57 @@
       background: #f8fafc !important;
       color: #0b1220 !important;
     }
+  
+    /* Logo identique aux autres applis (coin haut gauche) */
+    .app-logo-corner{
+      position: fixed;
+      left: 12px;
+      top: 12px;
+      width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      border: 1px solid var(--border, rgba(15,23,42,0.15));
+      box-shadow: 0 10px 24px rgba(15,23,42,0.18);
+      background: rgba(255,255,255,0.65);
+      backdrop-filter: blur(10px);
+      z-index: 1060; /* au-dessus de la page, sous la modale */
+      pointer-events: none;
+    }
+    [data-bs-theme="dark"] .app-logo-corner{
+      background: rgba(2,6,23,0.55);
+    }
+
+    /* Modale Aide : toujours lisible */
+    #helpModal .modal-content{
+      background: #ffffff;
+      color: #0b1220;
+      border: 1px solid rgba(15,23,42,0.12);
+      border-radius: 16px;
+    }
+    #helpModal .modal-header{
+      border-bottom: 1px solid rgba(15,23,42,0.10);
+    }
+    #helpModal .modal-footer{
+      border-top: 1px solid rgba(15,23,42,0.10);
+    }
+    #helpModal p, #helpModal li{
+      color: #0b1220;
+      line-height: 1.75;
+    }
+    #helpModal code{
+      background: rgba(15,23,42,0.06);
+      border: 1px solid rgba(15,23,42,0.10);
+      padding: .12em .35em;
+      border-radius: .4rem;
+    }
+    #helpModal pre{
+      background: #f8fafc;
+      border: 1px solid rgba(15,23,42,0.10);
+      padding: .75rem;
+      border-radius: .75rem;
+      overflow: auto;
+    }
+
   </style>
 </head>
 
@@ -309,7 +360,7 @@
 
           <button id="btnRefresh" class="btn btn-outline-secondary rounded-pill btn-sm">Rafraîchir</button>
 
-          <a id="btnHelp" class="btn btn-outline-secondary rounded-pill btn-sm" href="/help" target="_blank" rel="noopener">Aide</a>
+          <button id="btnHelp" class="btn btn-outline-secondary rounded-pill btn-sm" type="button" target="_blank" rel="noopener" data-bs-toggle="modal" data-bs-target="#helpModal">Aide</button>
         </div>
       </div>
 
@@ -1126,5 +1177,64 @@
     catch (e) { console.error(e); showToast("Erreur init (voir console)."); }
   })();
 </script>
+
+  <!-- Logo (coin haut gauche) -->
+  <img src="static/logo_avatar.png" class="app-logo-corner" alt="Logo">
+
+  <!-- Modale Aide (remplace /help) -->
+  <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="helpModalLabel">Aide · Timeline</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-3">Cette application sert à <strong>centraliser des documents</strong>, <strong>produire une timeline</strong> et <strong>générer des rapports</strong> (avec ou sans analyse LLM) sur un dossier.</p>
+
+          <h6 class="mt-3">1) Créer / sélectionner un dossier</h6>
+          <ul>
+            <li>Dans <em>Utiliser</em> : saisis un identifiant (ex: <code>flag_2026</code>) puis clique <strong>Créer</strong>.</li>
+            <li><strong>Rafraîchir</strong> recharge la liste et l’état du dossier.</li>
+          </ul>
+
+          <h6 class="mt-3">2) Ajouter des documents</h6>
+          <ul>
+            <li>Glisse-dépose des fichiers dans la zone <strong>Ajouter des documents</strong>.</li>
+            <li>Attends la fin de l’ingestion avant de lancer une analyse.</li>
+          </ul>
+
+          <h6 class="mt-3">3) Onglet Timeline</h6>
+          <ul>
+            <li><strong>Par page</strong> : vue chronologique avec contexte de pagination.</li>
+            <li><strong>Par acte</strong> : regroupe/filtre par type d’acte ou événement.</li>
+            <li><strong>Exporter CSV</strong> : export de la timeline filtrée.</li>
+            <li><strong>Charger +500</strong> : charge davantage d’éléments si le dossier est volumineux.</li>
+          </ul>
+
+          <h6 class="mt-3">4) Onglet Rapports</h6>
+          <ul>
+            <li><strong>Rapport par personne</strong> : synthèse centrée sur un individu (mentions, dates, contexte).</li>
+            <li><strong>Rapport par type d’acte</strong> : synthèse par catégories (PV, auditions, etc.).</li>
+          </ul>
+
+          <h6 class="mt-3">5) Onglet Analyse LLM</h6>
+          <ul>
+            <li><strong>Interroger</strong> : pose une question ciblée sur le dossier.</li>
+            <li><strong>Résumé global</strong> : synthèse « dossier ».</li>
+            <li><strong>Contradictions</strong> : recherche d’incohérences et points à vérifier.</li>
+            <li><strong>Extraction par personne / type d’acte</strong> : extraction structurée exploitable.</li>
+          </ul>
+
+          <hr class="my-3">
+          <p class="mb-0 small text-muted">Astuce GitHub Pages : évite les chemins absolus (ex: <code>/static/...</code>). Préfère <code>static/...</code> ou <code>./static/...</code> pour que ça marche sur <em>https://user.github.io/nom-repo/</em>.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
